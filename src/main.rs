@@ -17,15 +17,19 @@ fn main() {
     // find rolls in the expression
     let expression = &args.expression;
     let rolls = find_rolls(expression);
+    let mut roll_totals: Vec<i32> = vec![];
     // roll parsed dices
     for roll in rolls {
         let results = roll_dice(roll);
-        let total: i32 = results.1.iter().sum();
+        let dice_total: i32 = results.1.iter().sum();
+        roll_totals.push(dice_total);
         if args.verbose {
-            println!("{} -> {:?}, Total: {}", results.0, results.1, total);
+            println!("{} -> {:?}, Total: {}", results.0, results.1, dice_total);
         }
     }
-    // append result to the expression
+    // rewrite the expression with the results
+    let replaced_expression = replace_rolls(expression, roll_totals);
+    println!("{} = {}", expression, replaced_expression);
     // calculate the result
     // print the result
 }
@@ -59,4 +63,14 @@ fn roll_dice(expression: &str) -> (String, Vec<i32>) {
         results.push(roll);
     }
     (expression.to_string(), results)
+}
+
+fn replace_rolls(expression: &str, roll_totals: Vec<i32>) -> String {
+    // replace the rolls in the expression with the results
+    let re = Regex::new(r"\d*d\d+").unwrap();
+    let mut replaced_expression = expression.to_string();
+    for roll_total in roll_totals {
+        replaced_expression = re.replace(&replaced_expression, roll_total.to_string().as_str()).to_string();
+    }
+    replaced_expression
 }
